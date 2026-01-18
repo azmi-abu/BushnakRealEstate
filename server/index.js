@@ -4,6 +4,10 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import crypto from "crypto";
+import mongoose from "mongoose";
+import { sendLeadEmail } from "./mailer.js";
+import projectsRoute from "./routes/projects.js";
 
 dotenv.config();
 
@@ -32,35 +36,81 @@ function writeLeads(leads) {
   fs.writeFileSync(leadsFile, JSON.stringify(leads, null, 2), "utf8");
 }
 
+function isValidPhone(p) {
+  const digits = String(p || "").replace(/\D/g, "");
+  return /^05\d{8}$/.test(digits); // Israeli mobile format
+}
+
+function isValidEmail(e) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim());
+}
+
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Server is running" });
 });
 
-app.post("/api/contact", (req, res) => {
+/** Projects API (MongoDB) */
+app.use("/api/projects", projectsRoute);
+
+/** Contact API (still saving leads.json) */
+app.post("/api/contact", async (req, res) => {
   const { phone, email } = req.body || {};
 
-  const phoneClean = String(phone || "").trim();
+  const phoneClean = String(phone || "").replace(/\D/g, "");
   const emailClean = String(email || "").trim();
 
-  // Simple validation
-  if (phoneClean.length < 7) {
-    return res.status(400).json({ ok: false, message: "מספר טלפון לא תקין" });
+  // Validation
+  if (!isValidPhone(phoneClean)) {
+    return res.status(400).json({
+      ok: false,
+      message: "מספר טלפון לא תקין (חייב להתחיל ב-05 ולהיות 10 ספרות)",
+    });
   }
-  if (!emailClean.includes("@")) {
+  if (!isValidEmail(emailClean)) {
     return res.status(400).json({ ok: false, message: "אימייל לא תקין" });
   }
 
+  // Save to leads.json
   const leads = readLeads();
-  leads.unshift({
+  const lead = {
     id: crypto.randomUUID(),
     phone: phoneClean,
     email: emailClean,
     createdAt: new Date().toISOString(),
-  });
+  };
+
+  leads.unshift(lead);
   writeLeads(leads);
+
+  // Send email to Gmail
+  try {
+    await sendLeadEmail({ phone: phoneClean, email: emailClean });
+  } catch (err) {
+    console.error("EMAIL SEND ERROR:", err);
+  }
 
   return res.json({ ok: true, message: "פרטיך התקבלו בהצלחה" });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`API listening on http://localhost:${PORT}`));
+
+/** Connect MongoDB, then start server */
+async function start() {
+  try {
+    if (!process.env.MONGO_URI) {
+      throw new Error("Missing MONGO_URI in .env");
+    }
+
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ MongoDB connected");
+
+    app.listen(PORT, () =>
+      console.log(`✅ API listening on http://localhost:${PORT}`)
+    );
+  } catch (err) {
+    console.error("❌ Failed to start server:", err.message);
+    process.exit(1);
+  }
+}
+
+start();

@@ -1,24 +1,28 @@
 @import "tailwindcss";
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 88px; /* so header doesn't cover section title */
 }
 
 :root {
-  --brand-bg: #062c24;
-  --brand-yellow: #d9ff4a;
-  --brand-yellow2: #c8f000;
-  --brand-green: #0d6b57;
-  --brand-green2: #12826a;
+  /* BRAND COLORS (from logo) */
+  --brand-bg: #053827;        /* green */
+  --brand-panel: #042e22;     /* darker panel */
+  --brand-green2: #064130;    /* slightly lighter green */
+  --brand-yellow: #f0d186;    /* gold */
+  --brand-yellow2: #f6dd9f;   /* lighter gold for hover */
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
 body {
   margin: 0;
-  font-family: "Heebo", system-ui, sans-serif;
+  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    sans-serif;
   direction: rtl;
   background: var(--brand-bg); /* hard force */
 }

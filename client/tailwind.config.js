@@ -3,13 +3,16 @@ export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
+      fontFamily: {
+    sans: ["Montserrat", "Heebo", "system-ui", "sans-serif"],
+  },
       colors: {
-        brandBg: "#062c24",
-        brandPanel: "#08352c",
-        brandGreen: "#0a4a3d",
-        brandGreen2: "#0d6b57",
-        brandYellow: "#d9ff4a",
-        brandYellow2: "#bff22f",
+        /* BRAND COLORS (from logo) */
+        brandBg: "#053827",
+        brandPanel: "#042e22",
+        brandGreen2: "#064130",
+        brandYellow: "#f0d186",
+        brandYellow2: "#f6dd9f",
       },
     },
   },
