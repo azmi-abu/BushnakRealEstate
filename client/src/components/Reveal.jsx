@@ -5,7 +5,17 @@ export default function Reveal({ children, className = "" }) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // If the browser doesn't support IntersectionObserver, show everything
+    // Reduce motion: show immediately
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setShow(true);
+      return;
+    }
+
+    // If IntersectionObserver not supported, show everything
     if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
       setShow(true);
       return;
@@ -24,17 +34,13 @@ export default function Reveal({ children, className = "" }) {
           obs.disconnect();
         }
       },
-      {
-        root: null,
-        threshold: 0.12,
-        rootMargin: "120px 0px 120px 0px", // helps trigger earlier
-      }
+      { root: null, threshold: 0.12, rootMargin: "120px 0px 120px 0px" }
     );
 
     obs.observe(el);
 
-    // SAFETY: if it didn't trigger within 600ms, show anyway
-    const t = setTimeout(() => setShow(true), 600);
+    // Safety: if it didn't trigger quickly, show anyway
+    const t = setTimeout(() => setShow(true), 800);
 
     return () => {
       clearTimeout(t);

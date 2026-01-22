@@ -5,7 +5,6 @@ export default function About() {
   const videoRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
 
-  // Sync React state with the actual video element
   useEffect(() => {
     if (!videoRef.current) return;
     videoRef.current.muted = isMuted;
@@ -19,13 +18,12 @@ export default function About() {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
 
-    // Ensure playback continues after user interaction
     try {
       if (!nextMuted && video.paused) {
         await video.play();
       }
     } catch {
-      // silently ignore browser restrictions
+      // ignore autoplay restrictions
     }
   };
 
@@ -40,12 +38,17 @@ export default function About() {
             <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[var(--brand-green2)]/25 blur-3xl" />
 
             <div className="relative h-full min-h-[360px]">
-              {/* CLICK OVERLAY */}
+              {/* CLICK OVERLAY - accessible */}
               <button
                 type="button"
                 onClick={toggleMute}
-                aria-label={isMuted ? "Turn sound on" : "Turn sound off"}
-                className="absolute inset-0 z-10 cursor-pointer"
+                aria-label={isMuted ? "הפעלת קול" : "כיבוי קול"}
+                className="
+                  absolute inset-0 z-10 cursor-pointer
+                  focus:outline-none focus-visible:ring-4
+                  focus-visible:ring-[var(--brand-yellow)]/60
+                  focus-visible:ring-offset-2 focus-visible:ring-offset-black/30
+                "
               >
                 {/* SOUND INDICATOR */}
                 <div className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1 text-sm text-white backdrop-blur transition hover:bg-black/55">
@@ -55,8 +58,9 @@ export default function About() {
                         ? "bg-white/60"
                         : "bg-[var(--brand-yellow)] shadow-[0_0_12px_rgba(217,255,74,0.6)]"
                     }`}
+                    aria-hidden="true"
                   />
-                  {isMuted ? "ללא קול" : "קול פעיל"}
+                  <span>{isMuted ? "ללא קול" : "קול פעיל"}</span>
                 </div>
               </button>
 
@@ -173,12 +177,13 @@ export default function About() {
 function Bullet({ title, desc }) {
   return (
     <div className="flex gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[var(--brand-yellow)] shadow-[0_0_18px_rgba(217,255,74,0.22)]" />
+      <div
+        className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[var(--brand-yellow)] shadow-[0_0_18px_rgba(217,255,74,0.22)]"
+        aria-hidden="true"
+      />
       <div>
         <div className="font-semibold text-white">{title}</div>
-        <div className="mt-1 text-sm text-white/75 leading-relaxed">
-          {desc}
-        </div>
+        <div className="mt-1 text-sm text-white/75 leading-relaxed">{desc}</div>
       </div>
     </div>
   );

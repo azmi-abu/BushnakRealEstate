@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+:focus-visible {
+  outline: 3px solid rgba(240, 209, 134, 0.85);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 88px; /* so header doesn't cover section title */
@@ -7,11 +13,14 @@ html {
 
 :root {
   /* BRAND COLORS (from logo) */
-  --brand-bg: #053827;        /* green */
-  --brand-panel: #042e22;     /* darker panel */
-  --brand-green2: #064130;    /* slightly lighter green */
-  --brand-yellow: #f0d186;    /* gold */
-  --brand-yellow2: #f6dd9f;   /* lighter gold for hover */
+  --brand-bg: #053827;
+  --brand-panel: #042e22;
+  --brand-green2: #064130;
+  --brand-yellow: #f0d186;
+  --brand-yellow2: #f6dd9f;
+
+  /* Accessibility */
+  --a11y-font-scale: 1;
 }
 
 html,
@@ -21,8 +30,95 @@ body {
 
 body {
   margin: 0;
-  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial,
-    sans-serif;
+
+  /* Make the entire app use ONE font consistently */
+  font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   direction: rtl;
-  background: var(--brand-bg); /* hard force */
+  background: var(--brand-bg);
+  color: #fff;
+}
+
+/* Global font scale (accessibility tool uses this var) */
+html {
+  font-size: calc(16px * var(--a11y-font-scale));
+}
+
+/* ===== Accessibility global layer ===== */
+
+/* readable font */
+body.a11y-readable-font {
+  font-family: Arial, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+}
+
+/* high contrast */
+body.a11y-contrast {
+  filter: contrast(1.25) saturate(1.15);
+}
+
+/* keyboard mode - strong focus ring */
+body.a11y-keyboard :focus-visible {
+  outline: 3px solid var(--brand-yellow) !important;
+  outline-offset: 3px !important;
+  border-radius: 10px;
+}
+
+/* highlight links */
+body.a11y-highlight-links a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+}
+
+/* highlight headings */
+body.a11y-highlight-headings h1,
+body.a11y-highlight-headings h2,
+body.a11y-highlight-headings h3,
+body.a11y-highlight-headings h4,
+body.a11y-highlight-headings h5,
+body.a11y-highlight-headings h6 {
+  outline: 2px dashed rgba(240, 209, 134, 0.65);
+  outline-offset: 6px;
+  border-radius: 14px;
+}
+
+/* hide images */
+body.a11y-hide-images img,
+body.a11y-hide-images video {
+  visibility: hidden !important;
+}
+
+/* big cursor */
+body.a11y-big-cursor,
+body.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='10' cy='10' r='8' fill='%23f0d186' fill-opacity='0.6' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E")
+      10 10,
+    auto !important;
+}
+
+/* reduce motion */
+body.a11y-reduce-motion *,
+body.a11y-reduce-motion *::before,
+body.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* text alignment */
+body[data-a11y-align="right"] {
+  text-align: right;
+}
+body[data-a11y-align="center"] {
+  text-align: center;
+}
+body[data-a11y-align="left"] {
+  text-align: left;
+}
+
+/* line height */
+body[data-a11y-line-height="relaxed"] {
+  line-height: 1.75;
+}
+body[data-a11y-line-height="extra"] {
+  line-height: 2;
 }
