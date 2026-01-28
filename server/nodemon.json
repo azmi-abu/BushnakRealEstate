@@ -1,0 +1,5 @@
+{
+  "watch": ["index.js", "mailer.js", "routes", "utils"],
+  "ignore": ["leads.json", "*.json", ".env", "node_modules", "uploads", "public", "dist", "build"],
+  "ext": "js,mjs,cjs"
+}

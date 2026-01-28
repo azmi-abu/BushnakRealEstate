@@ -1,0 +1,19 @@
+﻿# Env
+server/.env
+server/.env.example
+
+# Node
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Logs
+*.log
+
+# Build
+client/build/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -49,47 +49,59 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Server is running" });
 });
 
+/** ✅ Quick email test (hit in browser) */
+app.get("/api/test-email", async (req, res) => {
+  try {
+    await sendLeadEmail({ phone: "0501234567", email: "test@example.com" });
+    res.json({ ok: true, message: "Test email sent ✅" });
+  } catch (err) {
+    console.error("TEST EMAIL ERROR:", err);
+    res.status(500).json({ ok: false, message: err.message || "Failed to send" });
+  }
+});
+
 /** Projects API (MongoDB) */
 app.use("/api/projects", projectsRoute);
 
 /** Contact API (still saving leads.json) */
 app.post("/api/contact", async (req, res) => {
-  const { phone, email } = req.body || {};
-
-  const phoneClean = String(phone || "").replace(/\D/g, "");
-  const emailClean = String(email || "").trim();
-
-  // Validation
-  if (!isValidPhone(phoneClean)) {
-    return res.status(400).json({
-      ok: false,
-      message: "מספר טלפון לא תקין (חייב להתחיל ב-05 ולהיות 10 ספרות)",
-    });
-  }
-  if (!isValidEmail(emailClean)) {
-    return res.status(400).json({ ok: false, message: "אימייל לא תקין" });
-  }
-
-  // Save to leads.json
-  const leads = readLeads();
-  const lead = {
-    id: crypto.randomUUID(),
-    phone: phoneClean,
-    email: emailClean,
-    createdAt: new Date().toISOString(),
-  };
-
-  leads.unshift(lead);
-  writeLeads(leads);
-
-  // Send email to Gmail
   try {
-    await sendLeadEmail({ phone: phoneClean, email: emailClean });
-  } catch (err) {
-    console.error("EMAIL SEND ERROR:", err);
-  }
+    const { phone, email } = req.body || {};
 
-  return res.json({ ok: true, message: "פרטיך התקבלו בהצלחה" });
+    const phoneClean = String(phone || "").replace(/\D/g, "");
+    const emailClean = String(email || "").trim();
+
+    // Validation
+    if (!isValidPhone(phoneClean)) {
+      return res.status(400).json({
+        ok: false,
+        message: "מספר טלפון לא תקין (חייב להתחיל ב-05 ולהיות 10 ספרות)",
+      });
+    }
+    if (!isValidEmail(emailClean)) {
+      return res.status(400).json({ ok: false, message: "אימייל לא תקין" });
+    }
+
+    // Save to leads.json
+    const leads = readLeads();
+    const lead = {
+      id: crypto.randomUUID(),
+      phone: phoneClean,
+      email: emailClean,
+      createdAt: new Date().toISOString(),
+    };
+
+    leads.unshift(lead);
+    writeLeads(leads);
+
+    // Send email
+    await sendLeadEmail({ phone: phoneClean, email: emailClean });
+
+    return res.json({ ok: true, message: "פרטיך התקבלו בהצלחה ✅" });
+  } catch (err) {
+    console.error("CONTACT ERROR:", err);
+    return res.status(500).json({ ok: false, message: err.message || "שגיאה בשליחה (שרת)" });
+  }
 });
 
 const PORT = process.env.PORT || 5000;
@@ -104,9 +116,7 @@ async function start() {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected");
 
-    app.listen(PORT, () =>
-      console.log(`✅ API listening on http://localhost:${PORT}`)
-    );
+    app.listen(PORT, () => console.log(`✅ API listening on http://localhost:${PORT}`));
   } catch (err) {
     console.error("❌ Failed to start server:", err.message);
     process.exit(1);

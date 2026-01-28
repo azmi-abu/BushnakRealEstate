@@ -1,49 +1,82 @@
 @import "tailwindcss";
 
+/* ===== HARD RESET FOR LAYOUT / ZOOM / OVERFLOW BUGS ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  margin: 0;
+}
+
+@supports not (overflow-x: clip) {
+  html, body {
+    overflow-x: hidden;
+  }
+}
+
+/* ✅ IMPORTANT: keep images responsive (DO NOT use max-width:none) */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ✅ Force header logo to NEVER blow up (extra safety) */
+header img {
+  height: 56px !important;
+  width: auto !important;
+  max-width: 180px !important;
+  object-fit: contain !important;
+}
+
+/* ===== ACCESSIBLE FOCUS ===== */
 :focus-visible {
   outline: 3px solid rgba(240, 209, 134, 0.85);
   outline-offset: 3px;
   border-radius: 10px;
 }
 
+/* ===== SCROLL BEHAVIOR ===== */
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 88px; /* so header doesn't cover section title */
+  scroll-padding-top: 88px; /* header offset */
 }
 
+/* ===== CSS VARIABLES ===== */
 :root {
-  /* BRAND COLORS (from logo) */
   --brand-bg: #053827;
   --brand-panel: #042e22;
   --brand-green2: #064130;
   --brand-yellow: #f0d186;
   --brand-yellow2: #f6dd9f;
 
-  /* Accessibility */
   --a11y-font-scale: 1;
 }
 
+/* ===== FULL HEIGHT ===== */
 html,
 body {
   height: 100%;
 }
 
+/* ===== BASE BODY ===== */
 body {
-  margin: 0;
-
-  /* Make the entire app use ONE font consistently */
   font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   direction: rtl;
   background: var(--brand-bg);
   color: #fff;
 }
 
-/* Global font scale (accessibility tool uses this var) */
+/* ===== GLOBAL FONT SCALE (ACCESSIBILITY) ===== */
 html {
   font-size: calc(16px * var(--a11y-font-scale));
 }
 
-/* ===== Accessibility global layer ===== */
+/* ===== ACCESSIBILITY LAYERS ===== */
 
 /* readable font */
 body.a11y-readable-font {
@@ -55,7 +88,7 @@ body.a11y-contrast {
   filter: contrast(1.25) saturate(1.15);
 }
 
-/* keyboard mode - strong focus ring */
+/* keyboard mode */
 body.a11y-keyboard :focus-visible {
   outline: 3px solid var(--brand-yellow) !important;
   outline-offset: 3px !important;

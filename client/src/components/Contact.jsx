@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Reveal from "./Reveal";
 import { PhoneIcon } from "@heroicons/react/24/solid";
@@ -43,6 +43,17 @@ export default function Contact() {
       : "";
 
   const canSubmit = phoneOk && emailOk && status.type !== "loading";
+
+  useEffect(() => {
+  if (status.type !== "success" && status.type !== "error") return;
+
+  const t = setTimeout(() => {
+    setStatus({ type: "idle", message: "" });
+  }, 2000);
+
+  return () => clearTimeout(t);
+}, [status.type]);
+
 
   async function submit(e) {
     e.preventDefault();
@@ -132,7 +143,14 @@ export default function Contact() {
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
                     setPhone(digits);
+
+                    // clear phone error while typing
+                    if (touched.phone) setTouched((t) => ({ ...t, phone: false }));
+
+                    // clear status box when user edits
+                    if (status.type !== "idle") setStatus({ type: "idle", message: "" });
                   }}
+
                   onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
                   inputMode="numeric"
                   autoComplete="tel"
@@ -168,7 +186,16 @@ export default function Contact() {
                   "
                   placeholder="name@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+
+                    // clear email error while typing
+                    if (touched.email) setTouched((t) => ({ ...t, email: false }));
+
+                    // clear status box when user edits
+                    if (status.type !== "idle") setStatus({ type: "idle", message: "" });
+                  }}
+
                   onBlur={() => setTouched((t) => ({ ...t, email: true }))}
                   inputMode="email"
                   autoComplete="email"
