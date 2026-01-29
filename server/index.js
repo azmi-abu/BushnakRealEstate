@@ -14,12 +14,29 @@ dotenv.config();
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
-app.use(cors({ origin: CLIENT_ORIGIN }));
+// ---- CORS (dev + production) ----
+const allowlist = [
+  process.env.CLIENT_ORIGIN,      // set this in Railway backend vars
+  "http://localhost:5173",        // local dev Vite
+].filter(Boolean);
 
+app.use(
+  cors({
+    origin(origin, cb) {
+      // allow server-to-server/curl/postman (no origin header)
+      if (!origin) return cb(null, true);
+
+      if (allowlist.includes(origin)) return cb(null, true);
+
+      return cb(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+  })
+);
+
+// ---- File helpers (leads.json) ----
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const leadsFile = path.join(__dirname, "leads.json");
 
 function readLeads() {
@@ -36,20 +53,22 @@ function writeLeads(leads) {
   fs.writeFileSync(leadsFile, JSON.stringify(leads, null, 2), "utf8");
 }
 
+// ---- Validators ----
 function isValidPhone(p) {
   const digits = String(p || "").replace(/\D/g, "");
-  return /^05\d{8}$/.test(digits); // Israeli mobile format
+  return /^05\d{8}$/.test(digits);
 }
 
 function isValidEmail(e) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim());
 }
 
+// ---- Routes ----
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Server is running" });
 });
 
-/** ✅ Quick email test (hit in browser) */
+// Email test (optional - consider disabling in production)
 app.get("/api/test-email", async (req, res) => {
   try {
     await sendLeadEmail({ phone: "0501234567", email: "test@example.com" });
@@ -60,18 +79,16 @@ app.get("/api/test-email", async (req, res) => {
   }
 });
 
-/** Projects API (MongoDB) */
+// Mongo projects API
 app.use("/api/projects", projectsRoute);
 
-/** Contact API (still saving leads.json) */
+// Contact endpoint (leads.json + email)
 app.post("/api/contact", async (req, res) => {
   try {
     const { phone, email } = req.body || {};
-
     const phoneClean = String(phone || "").replace(/\D/g, "");
     const emailClean = String(email || "").trim();
 
-    // Validation
     if (!isValidPhone(phoneClean)) {
       return res.status(400).json({
         ok: false,
@@ -82,7 +99,6 @@ app.post("/api/contact", async (req, res) => {
       return res.status(400).json({ ok: false, message: "אימייל לא תקין" });
     }
 
-    // Save to leads.json
     const leads = readLeads();
     const lead = {
       id: crypto.randomUUID(),
@@ -94,7 +110,6 @@ app.post("/api/contact", async (req, res) => {
     leads.unshift(lead);
     writeLeads(leads);
 
-    // Send email
     await sendLeadEmail({ phone: phoneClean, email: emailClean });
 
     return res.json({ ok: true, message: "פרטיך התקבלו בהצלחה ✅" });
@@ -104,14 +119,16 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
+// ---- Start server ----
 const PORT = process.env.PORT || 5000;
 
-/** Connect MongoDB, then start server */
 async function start() {
   try {
+    // Debug (remove later if you want)
     console.log("ENV CHECK:", {
       hasMongo: !!process.env.MONGO_URI,
       mongoLen: process.env.MONGO_URI ? process.env.MONGO_URI.length : 0,
+      clientOrigin: process.env.CLIENT_ORIGIN || null,
     });
 
     if (!process.env.MONGO_URI) {
@@ -127,6 +144,5 @@ async function start() {
     process.exit(1);
   }
 }
-
 
 start();
