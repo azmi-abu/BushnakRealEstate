@@ -15,24 +15,23 @@ const app = express();
 app.use(express.json({ limit: "1mb" }));
 
 // ---- CORS (dev + production) ----
+import cors from "cors";
+
 const allowlist = [
-  process.env.CLIENT_ORIGIN,      // set this in Railway backend vars
-  "http://localhost:5173",        // local dev Vite
+  process.env.CLIENT_ORIGIN,   // Vercel frontend URL in prod
+  "http://localhost:5173",     // local dev
 ].filter(Boolean);
 
 app.use(
   cors({
     origin(origin, cb) {
-      // allow server-to-server/curl/postman (no origin header)
       if (!origin) return cb(null, true);
-
       if (allowlist.includes(origin)) return cb(null, true);
-
       return cb(new Error(`CORS blocked for origin: ${origin}`));
     },
-    credentials: true,
   })
 );
+
 
 // ---- File helpers (leads.json) ----
 const __filename = fileURLToPath(import.meta.url);
