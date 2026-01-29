@@ -109,18 +109,24 @@ const PORT = process.env.PORT || 5000;
 /** Connect MongoDB, then start server */
 async function start() {
   try {
+    console.log("ENV CHECK:", {
+      hasMongo: !!process.env.MONGO_URI,
+      mongoLen: process.env.MONGO_URI ? process.env.MONGO_URI.length : 0,
+    });
+
     if (!process.env.MONGO_URI) {
-      throw new Error("Missing MONGO_URI in .env");
+      throw new Error("Missing MONGO_URI environment variable");
     }
 
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected");
 
-    app.listen(PORT, () => console.log(`✅ API listening on http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`✅ API listening on port ${PORT}`));
   } catch (err) {
     console.error("❌ Failed to start server:", err.message);
     process.exit(1);
   }
 }
+
 
 start();
