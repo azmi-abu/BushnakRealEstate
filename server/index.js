@@ -14,9 +14,6 @@ dotenv.config();
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
-// ---- CORS (dev + production) ----
-import cors from "cors";
-
 const allowlist = [
   process.env.CLIENT_ORIGIN,   // Vercel frontend URL in prod
   "http://localhost:5173",     // local dev
