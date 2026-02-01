@@ -35,7 +35,6 @@ export default function Projects() {
 
     document.body.style.overflow = prevOverflowRef.current || "";
 
-    // return focus
     setTimeout(() => {
       lastFocusRef.current?.focus?.();
     }, 0);
@@ -48,12 +47,29 @@ export default function Projects() {
       try {
         setLoading(true);
         setErrMsg("");
+
         const data = await getProjects();
         if (!alive) return;
-        setProjects(Array.isArray(data) ? data : []);
+
+        const arr = Array.isArray(data) ? data : [];
+
+        // ✅ DEBUG: see exactly what the frontend receives
+        console.log("✅ Projects fetched:", arr);
+        console.log("✅ Sample project:", arr[0]);
+
+        // ✅ DEBUG: find the problematic one easily
+        const heights = arr.find((x) => String(x?.title || "").includes("HEIGHTS"));
+        if (heights) console.log("🟡 FOUND HEIGHTS PROJECT:", heights);
+
+        // ✅ DEBUG: check duplicate ids (causes Swiper/React reuse bugs)
+        const ids = arr.map((p) => String(p?._id));
+        const uniqueCount = new Set(ids).size;
+        console.log("✅ IDs unique?", uniqueCount === ids.length, { total: ids.length, unique: uniqueCount });
+
+        setProjects(arr);
       } catch (e) {
         if (!alive) return;
-        console.error(e);
+        console.error("❌ getProjects error:", e);
         setErrMsg("שגיאה בטעינת פרויקטים");
       } finally {
         if (!alive) return;
@@ -63,7 +79,6 @@ export default function Projects() {
 
     return () => {
       alive = false;
-      // safety cleanup in case modal left open
       document.body.style.overflow = prevOverflowRef.current || "";
     };
   }, []);
@@ -81,9 +96,7 @@ export default function Projects() {
           ) : errMsg ? (
             <div className="py-12 text-center text-red-200">{errMsg}</div>
           ) : projects.length === 0 ? (
-            <div className="py-12 text-center text-white/70">
-              אין פרויקטים להצגה כרגע.
-            </div>
+            <div className="py-12 text-center text-white/70">אין פרויקטים להצגה כרגע.</div>
           ) : (
             <Swiper
               modules={[Navigation, Pagination]}
@@ -97,31 +110,32 @@ export default function Projects() {
               }}
             >
               {projects.map((p) => (
-                <SwiperSlide key={p._id}>
-                  <ProjectCard
-                    {...p}
-                    onDetails={(e) => openModal(p, e?.currentTarget)}
-                  />
+                <SwiperSlide
+                  key={String(p?._id)}
+                  className="h-auto !overflow-visible"
+                >
+                  <div className="h-full !overflow-visible">
+                    <ProjectCard
+                      {...p}
+                      onDetails={(e) => openModal(p, e?.currentTarget)}
+                    />
+                  </div>
                 </SwiperSlide>
               ))}
+
             </Swiper>
           )}
         </div>
       </Reveal>
 
-      {open && activeProject && (
-        <ProjectModal project={activeProject} onClose={closeModal} />
-      )}
+      {open && activeProject && <ProjectModal project={activeProject} onClose={closeModal} />}
     </section>
   );
 }
 
 function ProjectCard({ title, location, price, imageUrl, pdfUrl, onDetails }) {
   const hasPrice = Number.isFinite(Number(price)) && Number(price) > 0;
-  const formattedPrice = useMemo(
-    () => (hasPrice ? formatILS(price) : ""),
-    [hasPrice, price]
-  );
+  const formattedPrice = useMemo(() => (hasPrice ? formatILS(price) : ""), [hasPrice, price]);
 
   const pdf = safeUrl(pdfUrl);
 
@@ -131,58 +145,63 @@ function ProjectCard({ title, location, price, imageUrl, pdfUrl, onDetails }) {
   }
 
   return (
-    <div
-      className="
-        group overflow-hidden rounded-3xl border border-white/10 bg-white/5
-        shadow-xl transition hover:-translate-y-1 hover:shadow-[0_0_70px_rgba(217,255,74,0.12)]
-        flex flex-col h-full
-      "
-    >
-      {/* IMAGE AREA MUST BE A BUTTON (not div onClick) */}
+    <div className="group overflow-hidden rounded-3xl border border-white/10 bg-white/5
+  shadow-xl transition hover:-translate-y-1 hover:shadow-[0_0_70px_rgba(217,255,74,0.12)]
+  flex flex-col h-full min-h-[420px]"
+>
       <button
-        type="button"
-        onClick={openPdf}
-        className="relative h-56 shrink-0 w-full text-right focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--brand-yellow)]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30"
-        aria-label={pdf ? `צפייה ב-PDF של ${title}` : `אין PDF לפרויקט: ${title}`}
-        disabled={!pdf}
-      >
-        <img
-          src={imageUrl || "/projects/p1.jpg"}
-          alt={title || "תמונת פרויקט"}
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-        />
+  type="button"
+  onClick={openPdf}
+  disabled={!pdf}
+  aria-label={pdf ? `צפייה ב-PDF של ${title}` : `אין PDF לפרויקט: ${title}`}
+  className="
+    relative w-full shrink-0 overflow-hidden
+    aspect-[16/10]
+    text-right
+    focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--brand-yellow)]/60
+    focus-visible:ring-offset-2 focus-visible:ring-offset-black/30
+  "
+>
+  <img
+    src={imageUrl || "/projects/p1.jpg"}
+    alt={title || "תמונת פרויקט"}
+    className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110"
+  />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-bg)]/85 via-[var(--brand-bg)]/10 to-transparent pointer-events-none" />
+  <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-bg)]/85 via-[var(--brand-bg)]/10 to-transparent pointer-events-none" />
 
-        {hasPrice && (
-          <div className="absolute bottom-4 right-4 rounded-full bg-[var(--brand-yellow)] px-4 py-2 text-sm font-extrabold text-[var(--brand-bg)] shadow-lg pointer-events-none">
-            {formattedPrice}
-          </div>
-        )}
+  {hasPrice && (
+    <div className="absolute bottom-4 right-4 rounded-full bg-[var(--brand-yellow)] px-4 py-2 text-sm font-extrabold text-[var(--brand-bg)] shadow-lg pointer-events-none">
+      {formattedPrice}
+    </div>
+  )}
 
-        <div
-          className="
-            absolute bottom-4 left-4
-            max-w-[calc(100%-170px)]
-            truncate
-            rounded-full border border-white/15 bg-white/10
-            px-3 py-1 text-xs text-white backdrop-blur pointer-events-none
-          "
-          title={location}
-        >
-          {location}
-        </div>
+  <div
+    className="
+      absolute bottom-4 left-4
+      max-w-[calc(100%-170px)]
+      truncate
+      rounded-full border border-white/15 bg-white/10
+      px-3 py-1 text-xs text-white backdrop-blur pointer-events-none
+    "
+    title={location}
+  >
+    {location || "—"}
+  </div>
 
-        <div className="pointer-events-none absolute top-4 left-4 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs text-white/85 backdrop-blur">
-          {pdf ? "לחץ לצפייה ב-PDF" : "אין PDF"}
-        </div>
-      </button>
+  <div className="pointer-events-none absolute top-4 left-4 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs text-white/85 backdrop-blur">
+    {pdf ? "לחץ לצפייה ב-PDF" : "אין PDF"}
+  </div>
+</button>
 
-      {/* CONTENT */}
+
       <div className="p-5 flex flex-col flex-1">
-        <div className="text-lg font-extrabold">{title}</div>
+        {/* ✅ DEBUG title (shows even if empty) */}
+        <div className="text-lg font-extrabold bg-red-500/10 rounded-lg px-2 py-1">
+          {String(title || "")}
+        </div>
 
-        <div className="mt-3 text-sm text-white/70 line-clamp-2">{location}</div>
+        <div className="mt-3 text-sm text-white/70 line-clamp-2">{location || "—"}</div>
 
         <div className="mt-auto pt-4 flex items-center justify-between">
           <span className="text-xs text-white/50" />
@@ -196,11 +215,7 @@ function ProjectCard({ title, location, price, imageUrl, pdfUrl, onDetails }) {
           </button>
         </div>
 
-        {!pdfUrl ? (
-          <div className="mt-3 text-xs text-red-200">
-            חסר pdfUrl לפרויקט הזה במסד הנתונים
-          </div>
-        ) : null}
+        {!pdfUrl ? <div className="mt-3 text-xs text-red-200">חסר pdfUrl לפרויקט הזה במסד הנתונים</div> : null}
       </div>
     </div>
   );
@@ -210,22 +225,15 @@ function ProjectModal({ project, onClose }) {
   const closeBtnRef = useRef(null);
   const dialogRef = useRef(null);
 
-  const hasPrice =
-    Number.isFinite(Number(project.price)) && Number(project.price) > 0;
-
-  const formattedPrice = useMemo(
-    () => (hasPrice ? formatILS(project.price) : ""),
-    [hasPrice, project.price]
-  );
+  const hasPrice = Number.isFinite(Number(project.price)) && Number(project.price) > 0;
+  const formattedPrice = useMemo(() => (hasPrice ? formatILS(project.price) : ""), [hasPrice, project.price]);
 
   const pdf = safeUrl(project.pdfUrl);
 
-  // Focus close button on open
   useEffect(() => {
     closeBtnRef.current?.focus?.();
   }, []);
 
-  // Trap focus inside modal + ESC close
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -244,7 +252,6 @@ function ProjectModal({ project, onClose }) {
         onClose();
         return;
       }
-
       if (e.key !== "Tab") return;
 
       const focusables = getFocusable();
@@ -253,14 +260,12 @@ function ProjectModal({ project, onClose }) {
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
 
-      // shift+tab
       if (e.shiftKey) {
         if (document.activeElement === first) {
           e.preventDefault();
           last.focus();
         }
       } else {
-        // tab
         if (document.activeElement === last) {
           e.preventDefault();
           first.focus();
@@ -272,14 +277,10 @@ function ProjectModal({ project, onClose }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  // Click on backdrop closes (mouse)
   const onBackdropMouseDown = () => onClose();
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      onMouseDown={onBackdropMouseDown}
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onMouseDown={onBackdropMouseDown}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
       <div
@@ -298,8 +299,7 @@ function ProjectModal({ project, onClose }) {
             {hasPrice && (
               <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm">
                 <span className="h-2 w-2 rounded-full bg-[var(--brand-yellow)]" />
-                מחיר:{" "}
-                <span className="font-extrabold text-white">{formattedPrice}</span>
+                מחיר: <span className="font-extrabold text-white">{formattedPrice}</span>
               </div>
             )}
           </div>
@@ -317,23 +317,15 @@ function ProjectModal({ project, onClose }) {
 
         <div className="p-5">
           {!project.pdfUrl ? (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/80">
-              אין קובץ PDF לפרויקט הזה עדיין.
-            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/80">אין קובץ PDF לפרויקט הזה עדיין.</div>
           ) : (
             <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
-              <iframe
-                title={`PDF - ${project.title}`}
-                src={pdf}
-                className="h-[70vh] w-full"
-              />
+              <iframe title={`PDF - ${project.title}`} src={pdf} className="h-[70vh] w-full" />
             </div>
           )}
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-white/70">
-              אם הדפדפן לא מציג PDF בתוך החלון — אפשר לפתוח בחלון חדש.
-            </div>
+            <div className="text-sm text-white/70">אם הדפדפן לא מציג PDF בתוך החלון — אפשר לפתוח בחלון חדש.</div>
 
             {project.pdfUrl ? (
               <a

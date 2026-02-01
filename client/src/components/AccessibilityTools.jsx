@@ -140,8 +140,13 @@ export default function AccessibilityTools() {
   const fontPercent = useMemo(() => Math.round(s.fontScale * 100), [s.fontScale]);
 
   function setBigText() {
-    setS((p) => ({ ...p, fontScale: clamp(round2(p.fontScale + 0.05), 1, 1.35) }));
-  }
+  setS((p) => {
+    const next = round2(p.fontScale + 0.05);
+    // if we passed 135%, loop back to 100%
+    return { ...p, fontScale: next > 1.35 ? 1 : clamp(next, 1, 1.35) };
+  });
+}
+
 
   function toggle(key) {
     setS((p) => ({ ...p, [key]: !p[key] }));
@@ -199,9 +204,10 @@ export default function AccessibilityTools() {
             "fixed bottom-20 left-3 sm:left-5 z-[9999]",
             panelWidth,
             "max-w-[92vw]",
-            "max-h-[calc(100vh-120px)] overflow-y-auto",
+            "max-h-[calc(100vh-120px)]",
             "rounded-3xl",
             "bg-[#0f172a] shadow-2xl border border-white/10",
+            "flex flex-col overflow-hidden", // ✅ IMPORTANT
           ].join(" ")}
         >
           {/* Top row: close + title */}
@@ -223,14 +229,29 @@ export default function AccessibilityTools() {
             <div className="h-9 w-9" />
           </div>
 
+
+          {/* Bottom reset bar like screenshot */}
+            <button
+              type="button"
+              onClick={resetAll}
+              className="mt-4 w-full rounded-2xl bg-[#0b1220] border border-white/10 px-4 py-3 text-white font-extrabold flex items-center justify-between hover:bg-[#0d1526] transition"
+            >
+              <span>איפוס כל הגדרות הנגישות</span>
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/10 border border-white/10">
+                <IconRefresh className="h-4 w-4" />
+              </span>
+            </button>
           {/* Big Widget row */}
           <div className="px-4 pb-3 flex items-center justify-between">
+            
             <div className="text-white/85 text-sm font-bold">יישומון גדול</div>
+            
             <Switch checked={s.bigWidget} onChange={() => toggle("bigWidget")} />
+              
           </div>
-
+          
           {/* Grid tiles (same layout as screenshot) */}
-          <div className="px-4 pb-4">
+          <div className="px-4 pb-3 flex-1 overflow-y-auto">
             <div className="grid grid-cols-2 gap-3">
               <Tile
                 className={tileMinH}
@@ -325,17 +346,7 @@ export default function AccessibilityTools() {
               />
             </div>
 
-            {/* Bottom reset bar like screenshot */}
-            <button
-              type="button"
-              onClick={resetAll}
-              className="mt-4 w-full rounded-2xl bg-[#0b1220] border border-white/10 px-4 py-3 text-white font-extrabold flex items-center justify-between hover:bg-[#0d1526] transition"
-            >
-              <span>איפוס כל הגדרות הנגישות</span>
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/10 border border-white/10">
-                <IconRefresh className="h-4 w-4" />
-              </span>
-            </button>
+            
           </div>
         </div>
       )}

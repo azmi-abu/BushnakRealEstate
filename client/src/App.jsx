@@ -21,7 +21,7 @@ export default function App() {
   }, []);
 
   return (
-    <div
+     <div id="app-root"
       dir="rtl"
       className="min-h-screen w-full overflow-x-clip bg-[var(--brand-bg)] text-white font-[inherit]"
     >
@@ -91,8 +91,8 @@ export default function App() {
                 </div>
 
                 <h1 className="mt-4 sm:mt-5 text-3xl sm:text-4xl lg:text-6xl font-extrabold leading-tight [text-shadow:0_10px_30px_rgba(0,0,0,0.65)] font-[inherit]">
-                  ליווי השקעות נדל״ן{" "}
-                  <span className="text-[var(--brand-yellow)]">בדיוק ובביטחון</span>
+                 ייעוץ וליווי השקעות נדל"ן בדובאי{" "}
+                  {/* <span className="text-[var(--brand-yellow)]">בדיוק ובביטחון</span> */}
                 </h1>
 
                 <p className="mt-3 sm:mt-4 text-sm sm:text-lg leading-relaxed text-white/90 [text-shadow:0_6px_18px_rgba(0,0,0,0.55)] font-[inherit]">

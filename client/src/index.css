@@ -155,3 +155,8 @@ body[data-a11y-line-height="relaxed"] {
 body[data-a11y-line-height="extra"] {
   line-height: 2;
 }
+
+.swiper-pagination {
+  position: relative;
+  margin-top: 16px; /* adjust: 12 / 16 / 20 */
+}

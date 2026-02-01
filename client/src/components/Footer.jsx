@@ -2,7 +2,7 @@ import { PhoneIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
 
 const WA_TEXT =
   "שלום 👋\nאשמח לשמוע עוד פרטים על תוכנית הליווי שלכם ולבדוק התאמה עבורי. תודה!";
-const WA_LINK = `https://wa.me/972506161616?text=${encodeURIComponent(WA_TEXT)}`;
+const WA_LINK = `https://wa.me/972532258993?text=${encodeURIComponent(WA_TEXT)}`;
 
 const EMAIL_TO = "azmi.abu95@gmail.com";
 const EMAIL_SUBJECT = "פנייה מתוכנית הליווי";

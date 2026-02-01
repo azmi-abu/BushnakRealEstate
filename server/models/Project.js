@@ -4,9 +4,10 @@ const projectSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     location: { type: String, required: true, trim: true },
-    price: { type: Number, required: true }, // store as number
+    price: { type: Number, default: 0 },
     currency: { type: String, default: "ILS" },
-    images: [{ type: String, required: true }],
+    imageUrl: { type: String, required: true },
+    pdfUrl: { type: String, default: "" },
   },
   { timestamps: true }
 );
