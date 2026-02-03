@@ -17,7 +17,9 @@ export async function sendLeadEmail({ phone, email }) {
       <h2>🔥 Lead חדש התקבל</h2>
       <p><b>טלפון:</b> ${phone}</p>
       <p><b>אימייל:</b> ${email}</p>
-      <p style="color:#666"><b>זמן:</b> ${new Date().toLocaleString("he-IL")}</p>
+      <p style="color:#666">
+        <b>זמן:</b> ${new Date().toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" })}
+      </p>
     </div>
   `;
 

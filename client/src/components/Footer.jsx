@@ -4,7 +4,7 @@ const WA_TEXT =
   "שלום 👋\nאשמח לשמוע עוד פרטים על תוכנית הליווי שלכם ולבדוק התאמה עבורי. תודה!";
 const WA_LINK = `https://wa.me/972532258993?text=${encodeURIComponent(WA_TEXT)}`;
 
-const EMAIL_TO = "azmi.abu95@gmail.com";
+const EMAIL_TO = "wb.realestate.dubai@gmail.com";
 const EMAIL_SUBJECT = "פנייה מתוכנית הליווי";
 const EMAIL_BODY =
   "שלום 👋\nאשמח לשמוע עוד פרטים על תוכנית הליווי שלכם ולבדוק התאמה עבורי. תודה!";
