@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import Reveal from "./Reveal";
+import { BuildingOffice2Icon, MapPinIcon } from "@heroicons/react/24/solid";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -120,7 +121,7 @@ export default function Projects() {
   );
 }
 
-function ProjectCard({ title, location, price, imageUrl, pdfUrl, onDetails }) {
+function ProjectCard({ title,developer, location, price, imageUrl, pdfUrl, onDetails }) {
   const hasPrice = Number.isFinite(Number(price)) && Number(price) > 0;
   const formattedPrice = useMemo(() => (hasPrice ? formatILS(price) : ""), [hasPrice, price]);
 
@@ -145,6 +146,7 @@ function ProjectCard({ title, location, price, imageUrl, pdfUrl, onDetails }) {
     relative w-full shrink-0 overflow-hidden
     aspect-[16/10]
     text-right
+    cursor-pointer
     focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--brand-yellow)]/60
     focus-visible:ring-offset-2 focus-visible:ring-offset-black/30
   "
@@ -184,11 +186,25 @@ function ProjectCard({ title, location, price, imageUrl, pdfUrl, onDetails }) {
 
       <div className="p-5 flex flex-col flex-1">
         {/* ✅ DEBUG title (shows even if empty) */}
-        <div className="text-lg font-extrabold bg-red-500/10 rounded-lg px-2 py-1">
+        <div className="space-y-1">
+        <div className="text-lg font-extrabold">
           {String(title || "")}
         </div>
 
-        <div className="mt-3 text-sm text-white/70 line-clamp-2">{location || "—"}</div>
+        {developer ? (
+          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--brand-yellow)] tracking-wide">
+            <BuildingOffice2Icon className="h-4 w-4 opacity-90" />
+            <span className="truncate">{developer}</span>
+          </div>
+        ) : null}
+
+      </div>
+
+
+      <div className="mt-3 flex items-center gap-2 text-sm text-white/70">
+        <MapPinIcon className="h-4 w-4 opacity-80" />
+        <span className="line-clamp-2">{location || "—"}</span>
+      </div>
 
         <div className="mt-auto pt-4 flex items-center justify-between">
           <span className="text-xs text-white/50" />
@@ -281,6 +297,12 @@ function ProjectModal({ project, onClose }) {
         <div className="flex items-start justify-between gap-4 border-b border-white/10 p-5">
           <div className="min-w-0">
             <div className="text-xl font-extrabold">{project.title}</div>
+            {project.developer ? (
+            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-[var(--brand-yellow)]">
+              <BuildingOffice2Icon className="h-4 w-4 opacity-90" />
+              <span className="truncate">{project.developer}</span>
+            </div>
+          ) : null}
             <div className="mt-1 text-sm text-white/70">{project.location}</div>
 
             {hasPrice && (
