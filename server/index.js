@@ -14,36 +14,37 @@ dotenv.config();
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
-// ✅ CORS
+// ✅ CORS (allow prod + localhost + ALL Vercel previews)
 const allowlist = [
-  process.env.CLIENT_ORIGIN, // your main Vercel production URL (optional)
+  process.env.CLIENT_ORIGIN, // e.g. https://your-domain.vercel.app
   "http://localhost:5173",
   "http://localhost:3000",
 ].filter(Boolean);
 
-// allow all Vercel preview deployments too
-function isVercelPreview(origin) {
-  return typeof origin === "string" && origin.endsWith(".vercel.app");
-}
+const isVercelPreview = (origin) =>
+  typeof origin === "string" && origin.endsWith(".vercel.app");
 
 app.use(
   cors({
     origin(origin, cb) {
-      // allow requests with no origin (Postman, server-to-server, etc.)
+      // allow requests with no origin (Postman, server-to-server)
       if (!origin) return cb(null, true);
 
+      // allow exact allowlist + any vercel preview domain
       if (allowlist.includes(origin) || isVercelPreview(origin)) {
         return cb(null, true);
       }
 
-      return cb(new Error(`CORS blocked for origin: ${origin}`));
+      // ❗ IMPORTANT: do NOT throw errors here
+      // Just block the request quietly
+      return cb(null, false);
     },
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// ✅ handle preflight
+// ✅ handle preflight for all routes
 app.options("*", cors());
 
 // ---- File helpers (leads.json) ----
@@ -80,7 +81,7 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Server is running" });
 });
 
-// Email test (optional - consider disabling in production)
+// Email test (optional)
 app.get("/api/test-email", async (req, res) => {
   try {
     await sendLeadEmail({ phone: "0501234567", email: "test@example.com" });
@@ -127,7 +128,10 @@ app.post("/api/contact", async (req, res) => {
     return res.json({ ok: true, message: "פרטיך התקבלו בהצלחה ✅" });
   } catch (err) {
     console.error("CONTACT ERROR:", err);
-    return res.status(500).json({ ok: false, message: err.message || "שגיאה בשליחה (שרת)" });
+    return res.status(500).json({
+      ok: false,
+      message: err.message || "שגיאה בשליחה (שרת)",
+    });
   }
 });
 
