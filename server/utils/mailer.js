@@ -1,27 +1,50 @@
+// server/utils/mailer.js
 import nodemailer from "nodemailer";
+import dns from "dns";
 
-export function createTransporter() {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
+dns.setDefaultResultOrder("ipv4first"); // helps SMTP on some hosts
 
-  if (!user || !pass) {
-    throw new Error("Missing GMAIL_USER or GMAIL_APP_PASSWORD in .env");
+function createTransporter() {
+  const host = process.env.SMTP_HOST || "smtp-relay.brevo.com";
+  const port = Number(process.env.SMTP_PORT || 465);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    throw new Error("Missing SMTP_HOST / SMTP_USER / SMTP_PASS in env");
   }
 
   return nodemailer.createTransport({
-    service: "gmail",
+    host,
+    port,
+    secure: true, // ✅ MUST be true for 465
     auth: { user, pass },
+
+    // ✅ fail fast (no endless waiting)
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
+
+    tls: { minVersion: "TLSv1.2" },
   });
 }
 
 export async function sendLeadEmail({ phone, email }) {
-  const to = process.env.LEADS_TO_EMAIL || process.env.GMAIL_USER;
-  const from = process.env.GMAIL_USER;
+  const to = process.env.LEADS_TO_EMAIL;
+  const from = process.env.MAIL_FROM;
+
+  if (!to) throw new Error("Missing LEADS_TO_EMAIL in env");
+  if (!from) throw new Error("Missing MAIL_FROM in env");
 
   const transporter = createTransporter();
 
-  const subject = `🔥 Lead חדש מהדף נחיתה - ${phone}`;
-  const text = `Lead חדש התקבל:\n\nטלפון: ${phone}\nאימייל: ${email}\n\nזמן: ${new Date().toLocaleString("he-IL")}\n`;
+  // ✅ this will show clear log if SMTP can’t connect/auth
+  await transporter.verify();
+  console.log("✅ SMTP VERIFY OK");
+
+  const subject = `🔥 Lead חדש מהאתר - ${phone}`;
+  const text = `Lead חדש התקבל:\n\nטלפון: ${phone}\nאימייל: ${email}\nזמן: ${new Date().toLocaleString("he-IL")}\n`;
+
   const html = `
     <div style="font-family: Arial, sans-serif; direction: rtl">
       <h2>🔥 Lead חדש התקבל</h2>
@@ -32,8 +55,9 @@ export async function sendLeadEmail({ phone, email }) {
   `;
 
   await transporter.sendMail({
-    from: `"W.B Real Estate Consulting" <${from}>`,
+    from: `W.B Real Estate Consulting <${from}>`,
     to,
+    replyTo: email,
     subject,
     text,
     html,

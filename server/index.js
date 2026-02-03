@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import crypto from "crypto";
 import mongoose from "mongoose";
-import { sendLeadEmail } from "./mailer.js";
+import { sendLeadEmail } from "./utils/mailer.js";
 import projectsRoute from "./routes/projects.js";
 
 dotenv.config();

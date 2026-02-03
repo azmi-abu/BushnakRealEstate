@@ -53,19 +53,6 @@ export default function Projects() {
 
         const arr = Array.isArray(data) ? data : [];
 
-        // ✅ DEBUG: see exactly what the frontend receives
-        console.log("✅ Projects fetched:", arr);
-        console.log("✅ Sample project:", arr[0]);
-
-        // ✅ DEBUG: find the problematic one easily
-        const heights = arr.find((x) => String(x?.title || "").includes("HEIGHTS"));
-        if (heights) console.log("🟡 FOUND HEIGHTS PROJECT:", heights);
-
-        // ✅ DEBUG: check duplicate ids (causes Swiper/React reuse bugs)
-        const ids = arr.map((p) => String(p?._id));
-        const uniqueCount = new Set(ids).size;
-        console.log("✅ IDs unique?", uniqueCount === ids.length, { total: ids.length, unique: uniqueCount });
-
         setProjects(arr);
       } catch (e) {
         if (!alive) return;
