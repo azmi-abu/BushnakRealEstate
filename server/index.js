@@ -14,21 +14,37 @@ dotenv.config();
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
+// ✅ CORS
 const allowlist = [
-  process.env.CLIENT_ORIGIN,   // Vercel frontend URL in prod
-  "http://localhost:5173",     // local dev
+  process.env.CLIENT_ORIGIN, // your main Vercel production URL (optional)
+  "http://localhost:5173",
+  "http://localhost:3000",
 ].filter(Boolean);
+
+// allow all Vercel preview deployments too
+function isVercelPreview(origin) {
+  return typeof origin === "string" && origin.endsWith(".vercel.app");
+}
 
 app.use(
   cors({
     origin(origin, cb) {
+      // allow requests with no origin (Postman, server-to-server, etc.)
       if (!origin) return cb(null, true);
-      if (allowlist.includes(origin)) return cb(null, true);
+
+      if (allowlist.includes(origin) || isVercelPreview(origin)) {
+        return cb(null, true);
+      }
+
       return cb(new Error(`CORS blocked for origin: ${origin}`));
     },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// ✅ handle preflight
+app.options("*", cors());
 
 // ---- File helpers (leads.json) ----
 const __filename = fileURLToPath(import.meta.url);
@@ -120,7 +136,6 @@ const PORT = process.env.PORT || 5000;
 
 async function start() {
   try {
-    // Debug (remove later if you want)
     console.log("ENV CHECK:", {
       hasMongo: !!process.env.MONGO_URI,
       mongoLen: process.env.MONGO_URI ? process.env.MONGO_URI.length : 0,
