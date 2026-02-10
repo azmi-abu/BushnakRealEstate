@@ -71,7 +71,10 @@ export default function Projects() {
     <section id="projects" className="mx-auto max-w-6xl px-4 py-14">
       <Reveal>
         <div className="mb-6">
-          <h2 className="text-3xl font-extrabold">פרויקטים</h2>
+          <h2 className="text-3xl font-extrabold">פרויקטים להשקעה בדובאי</h2>
+            <p className="mt-2 text-white/70">
+              עיון בפרויקטים נבחרים והורדת ברושורים (PDF) עם פרטי הפרויקט.
+            </p>
         </div>
 
         <div className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-2xl">

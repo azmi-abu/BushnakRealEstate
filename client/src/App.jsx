@@ -154,6 +154,14 @@ export default function App() {
         </div>
       </section>
 
+    <section className="mx-auto max-w-6xl px-4 pt-10">
+      <h2 className="text-2xl sm:text-3xl font-extrabold">השקעות נדל״ן בדובאי עם ליווי אישי</h2>
+      <p className="mt-3 text-white/80 leading-relaxed">
+        W.B Real Estate Consulting מתמחה בליווי משקיעים בישראל ובחו״ל להשקעות נדל״ן בדובאי:
+        איתור פרויקטים מובילים, בדיקות לפני רכישה, השוואת מחירים, בניית אסטרטגיית תשואה ומו״מ מקצועי מול גורמים רלוונטיים.
+      </p>
+    </section>
+
       <main
         id="main"
         className="w-full overflow-x-clip bg-gradient-to-b from-[var(--brand-bg)] via-[var(--brand-bg)] to-black/40"
